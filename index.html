@@ -1,0 +1,2134 @@
+<html>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>手机编程</title>
+    <body>
+    <style>
+      * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+    transition: background-color 0.3s, color 0.3s;
+    overflow-x: hidden;
+}
+
+.app-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+/* 菜单按钮 */
+.menu-toggle {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    z-index: 1001;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    display: none;
+}
+
+/* 侧边栏样式 - 改为侧拉框 */
+.sidebar {
+    width: 320px;
+    background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
+    color: #ecf0f1;
+    padding: 25px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    position: relative;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.sidebar-header h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+.new-chapter-btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s;
+    min-height: 50px;
+}
+
+.new-chapter-btn:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+}
+
+/* 标签页样式 */
+.sidebar-tabs {
+    display: flex;
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 8px;
+    gap: 6px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 16px 20px;
+    background: none;
+    border: none;
+    color: #bdc3c7;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.3s;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 500;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tab-btn.active {
+    background: #3498db;
+    color: white;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+    transform: scale(1.02);
+}
+
+.tab-content {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.chapters-list, .history-list, .materials-list {
+    display: none;
+}
+
+.chapters-list.active, .history-list.active, .materials-list.active {
+    display: block;
+}
+
+/* 章节和历史版本项样式 */
+.chapter-item, .history-item {
+    padding: 20px 25px;
+    margin-bottom: 12px;
+    background-color: rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 5px solid transparent;
+    min-height: 80px;
+}
+
+.chapter-item:hover, .history-item:hover {
+    background-color: rgba(255, 255, 255, 0.18);
+    transform: translateX(8px);
+}
+
+.chapter-item.active, .history-item.active {
+    background-color: rgba(52, 152, 219, 0.35);
+    border-left-color: #3498db;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.chapter-title, .history-title {
+    font-weight: 600;
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.1rem;
+    margin-right: 15px;
+}
+
+.history-info {
+    font-size: 0.9rem;
+    color: #bdc3c7;
+    margin-top: 6px;
+    opacity: 0.9;
+}
+
+.chapter-actions, .history-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.chapter-action, .history-action {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #ecf0f1;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    padding: 10px 16px;
+    border-radius: 8px;
+    min-width: 60px;
+    text-align: center;
+}
+
+.chapter-action:hover, .history-action:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* 主编辑区样式 */
+.editor-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    transition: background-color 0.3s;
+    position: relative;
+}
+
+.editor-header {
+    padding: 20px 30px;
+    border-bottom: 2px solid #eaeaea;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: border-color 0.3s;
+}
+
+.chapter-input {
+    font-size: 1.6rem;
+    font-weight: 700;
+    border: none;
+    outline: none;
+    width: 70%;
+    color: #2c3e50;
+    background: transparent;
+    transition: color 0.3s;
+    padding: 10px 0;
+}
+
+.editor-toolbar {
+    display: flex;
+    gap: 12px;
+}
+
+.toolbar-btn {
+    background: none;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #7f8c8d;
+    transition: all 0.3s;
+    font-size: 1rem;
+    font-weight: 500;
+    min-height: 50px;
+}
+
+.toolbar-btn:hover {
+    background-color: #f0f0f0;
+    color: #2c3e50;
+    transform: translateY(-2px);
+}
+
+.editor-content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+.editor-textarea {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: #2c3e50;
+    font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    background: transparent;
+    transition: color 0.3s;
+}
+
+/* 状态栏样式 */
+.status-bar {
+    padding: 15px 30px;
+    background-color: #ecf0f1;
+    border-top: 2px solid #dde4e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+    color: #7f8c8d;
+    transition: all 0.3s;
+}
+
+.word-count {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+/* 遮罩层 */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+}
+
+.overlay.active {
+    display: block;
+}
+
+/* 版本比较模态框 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    width: 95%;
+    max-width: 900px;
+    max-height: 85vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    padding: 25px 30px;
+    border-bottom: 2px solid #eaeaea;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+}
+
+.modal-header h2 {
+    font-size: 1.8rem;
+    color: #2c3e50;
+}
+
+.modal-body {
+    padding: 25px 30px;
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    gap: 25px;
+}
+
+.version-comparison {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.version-comparison h3 {
+    font-size: 1.3rem;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.version-content {
+    border: 2px solid #eaeaea;
+    border-radius: 8px;
+    padding: 20px;
+    height: 350px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    background: #fafafa;
+}
+
+.modal-footer {
+    padding: 20px 30px;
+    border-top: 2px solid #eaeaea;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    background: #f8f9fa;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1rem;
+    font-weight: 500;
+    min-height: 50px;
+    min-width: 120px;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #7f8c8d;
+    transform: translateY(-2px);
+}
+
+/* 版本比较颜色标记 */
+.added-char {
+    background-color: #90EE90;
+    color: #006400;
+    padding: 1px 2px;
+    border-radius: 2px;
+    font-weight: bold;
+}
+
+.deleted-char {
+    background-color: #FFB6C1;
+    color: #8B0000;
+    padding: 1px 2px;
+    border-radius: 2px;
+    text-decoration: line-through;
+    font-weight: bold;
+}
+
+.modified-char {
+    background-color: #FFD700;
+    color: #8B4513;
+    padding: 1px 2px;
+    border-radius: 2px;
+    font-weight: bold;
+}
+
+.diff-line {
+    margin: 2px 0;
+    line-height: 1.4;
+}
+
+/* 第二编辑器样式 */
+.second-editor {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    height: 100vh;
+    background: white;
+    transition: right 0.3s ease;
+    z-index: 900;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+}
+
+.second-editor.active {
+    right: 0;
+}
+
+/* 素材分类样式 */
+.material-categories {
+    padding: 20px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.material-category {
+    margin-bottom: 30px;
+}
+
+.material-category h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #3498db;
+    font-size: 1.2rem;
+}
+
+.materials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.material-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.material-item:hover {
+    background: #e3f2fd;
+    border-color: #3498db;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+}
+
+.material-item.active {
+    background: #3498db;
+    color: white;
+    border-color: #2980b9;
+}
+
+.material-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.material-name {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 5px;
+    flex: 1;
+}
+
+.material-type {
+    font-size: 0.8rem;
+    color: #6c757d;
+    background: #e9ecef;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 10px;
+}
+
+.material-item.active .material-type {
+    background: rgba(255,255,255,0.3);
+    color: white;
+}
+
+.material-content {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #495057;
+    max-height: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.material-item.active .material-content {
+    color: rgba(255,255,255,0.9);
+}
+
+.material-image {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-top: 8px;
+}
+
+.material-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 5px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.material-item:hover .material-actions {
+    opacity: 1;
+}
+
+.material-action {
+    background: rgba(255,255,255,0.9);
+    border: none;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+/* 复制功能动画 */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.copy-notification {
+    animation: slideIn 0.3s ease;
+}
+
+/* 响应式设计 - 移动端侧拉框 */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block;
+    }
+    
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        transform: translateX(-100%);
+        box-shadow: 2px 0 20px rgba(0,0,0,0.3);
+        width: 85%;
+        max-width: 320px;
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .editor-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+        padding: 15px 20px;
+    }
+    
+    .chapter-input {
+        width: 100%;
+        font-size: 1.4rem;
+    }
+    
+    .editor-toolbar {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+    
+    .toolbar-btn {
+        flex: 1;
+        padding: 10px 8px;
+        font-size: 0.9rem;
+        min-height: 45px;
+        margin: 2px;
+    }
+    
+    .modal-body {
+        flex-direction: column;
+        padding: 20px;
+    }
+    
+    .version-content {
+        height: 250px;
+    }
+    
+    .second-editor {
+        width: 100%;
+    }
+    
+    .materials-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+    }
+}
+
+@media (min-width: 769px) {
+    .second-editor {
+        width: 45%;
+        max-width: 600px;
+    }
+}
+
+/* 暗色主题 */
+.dark-theme {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+}
+
+.dark-theme .editor-container {
+    background-color: #2d2d2d;
+}
+
+.dark-theme .editor-header {
+    border-bottom-color: #444;
+}
+
+.dark-theme .chapter-input {
+    color: #e0e0e0;
+}
+
+.dark-theme .editor-textarea {
+    color: #e0e0e0;
+}
+
+.dark-theme .status-bar {
+    background-color: #252525;
+    border-top-color: #444;
+    color: #aaa;
+}
+
+.dark-theme .toolbar-btn:hover {
+    background-color: #444;
+    color: #e0e0e0;
+}
+
+.dark-theme .modal-content {
+    background: #2d2d2d;
+    color: #e0e0e0;
+}
+
+.dark-theme .modal-header {
+    background: #333;
+    border-color: #444;
+}
+
+.dark-theme .modal-header h2 {
+    color: #e0e0e0;
+}
+
+.dark-theme .modal-footer {
+    background: #333;
+    border-color: #444;
+}
+
+.dark-theme .version-content {
+    border-color: #444;
+    background: #1a1a1a;
+    color: #e0e0e0;
+}
+
+.dark-theme .version-comparison h3 {
+    color: #e0e0e0;
+}
+
+/* 暗色主题下的颜色标记 */
+.dark-theme .added-char {
+    background-color: #2E8B57;
+    color: #98FB98;
+}
+
+.dark-theme .deleted-char {
+    background-color: #8B0000;
+    color: #FFB6C1;
+}
+
+.dark-theme .modified-char {
+    background-color: #B8860B;
+    color: #FFD700;
+}
+
+.version-content {
+    font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+/* 暗色主题第二编辑器 */
+.dark-theme .second-editor {
+    background: #2d2d2d;
+}
+
+.dark-theme .material-item {
+    background: #3d3d3d;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+.dark-theme .material-item:hover {
+    background: #4a4a4a;
+    border-color: #3498db;
+}
+
+.dark-theme .material-content {
+    color: #b0b0b0;
+}
+
+.dark-theme .material-type {
+    background: #555;
+    color: #ccc;
+}
+
+.dark-theme .material-category h3 {
+    color: #e0e0e0;
+    border-bottom-color: #3498db;
+}
+
+/* 空状态提示 */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #95a5a6;
+    font-size: 1.1rem;
+}
+
+/* 关闭侧边栏按钮 */
+.close-sidebar {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #ecf0f1;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .close-sidebar {
+        display: block;
+    }
+}
+
+/* 滑动指示器 */
+.swipe-indicator {
+    position: fixed;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    background: rgba(52, 152, 219, 0.8);
+    color: white;
+    padding: 10px 5px;
+    border-radius: 20px;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    z-index: 800;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+
+.swipe-indicator:hover {
+    background: #3498db;
+    transform: translateY(-50%) scale(1.1);
+}
+/* 需要添加这些选择器 */
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; }
+.form-group input, .form-group select, .form-group textarea { 
+    width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; 
+}
+</style>
+<body>
+    <!-- 菜单按钮 -->
+    <button class="menu-toggle" id="menuToggle">📚 章节</button>
+    
+    <!-- 遮罩层 -->
+    <div class="overlay" id="overlay"></div>
+    
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar" id="sidebar">
+            <button class="close-sidebar" id="closeSidebar">×</button>
+            <div class="sidebar-header">
+                <h1>小说写作助手</h1>
+                <button class="new-chapter-btn" id="newChapterBtn">新建章节</button>
+            </div>
+            
+            <div class="sidebar-tabs">
+                <button class="tab-btn active" data-tab="chapters">章节</button>
+                <button class="tab-btn" data-tab="materials">素材库</button>
+                <button class="tab-btn" data-tab="history">历史版本</button>
+            </div>
+            
+            <div class="tab-content">
+                <div class="chapters-list active" id="chaptersList">
+                    <!-- 章节列表将通过JavaScript动态生成 -->
+                </div>
+                
+                <div class="materials-list" id="materialsList">
+                    <!-- 素材库管理界面 -->
+                    <div class="materials-toolbar">
+                        <button class="toolbar-btn" id="uploadMaterialBtn">📁 上传文件</button>
+                        <button class="toolbar-btn" id="createMaterialBtn">✏️ 新建素材</button>
+                    </div>
+                    <div class="materials-stats">
+                        <div>总素材: <span id="totalMaterials">0</span></div>
+                        <div>图片: <span id="imageCount">0</span></div>
+                        <div>文档: <span id="docCount">0</span></div>
+                    </div>
+                </div>
+                
+                <div class="history-list" id="historyList">
+                    <!-- 历史版本列表将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 主编辑区 -->
+        <div class="editor-container" id="mainEditor">
+            <div class="editor-header">
+                <input type="text" class="chapter-input" id="chapterTitle" placeholder="请输入章节标题">
+                <div class="editor-toolbar">
+                    <button class="toolbar-btn" id="themeToggle">🌙 暗色模式</button>
+                    <button class="toolbar-btn" id="saveVersionBtn">💾 保存版本</button>
+                    <button class="toolbar-btn" id="copyAllBtn">📋 复制全文</button>
+                    <button class="toolbar-btn" id="exportBtn">📤 导出小说</button>
+                    <button class="toolbar-btn" id="saveBtn">💾 保存</button>
+                    <button class="toolbar-btn" id="toggleSecondEditor">📖 资料区</button>
+                </div>
+            </div>
+            
+            <div class="editor-content">
+                <textarea class="editor-textarea" id="editor" placeholder="开始你的创作之旅..."></textarea>
+            </div>
+            
+            <div class="status-bar">
+                <div class="auto-save">💾 自动保存已开启</div>
+                <div class="word-count">📝 字数: <span id="wordCount">0</span></div>
+            </div>
+        </div>
+        
+        <!-- 第二编辑器（资料区） -->
+        <div class="editor-container second-editor" id="secondEditor">
+            <div class="editor-header">
+                <input type="text" class="chapter-input" id="materialSearch" placeholder="🔍 搜索素材...">
+                <div class="editor-toolbar">
+                    <button class="toolbar-btn" id="addMaterialBtn">➕ 添加素材</button>
+                    <button class="toolbar-btn" id="toggleMainEditor">✏️ 返回写作</button>
+                </div>
+            </div>
+            
+            <div class="editor-content">
+                <div class="material-categories">
+                    <div class="material-category">
+                        <h3>👥 角色设定</h3>
+                        <div class="materials-grid" id="charactersGrid">
+                            <!-- 角色素材将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                    
+                    <div class="material-category">
+                        <h3>🏰 地点场景</h3>
+                        <div class="materials-grid" id="locationsGrid">
+                            <!-- 地点素材将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                    
+                    <div class="material-category">
+                        <h3>⚔️ 物品道具</h3>
+                        <div class="materials-grid" id="itemsGrid">
+                            <!-- 物品素材将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                    
+                    <div class="material-category">
+                        <h3>📖 情节大纲</h3>
+                        <div class="materials-grid" id="plotsGrid">
+                            <!-- 情节素材将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                    
+                    <div class="material-category">
+                        <h3>📄 文档资料</h3>
+                        <div class="materials-grid" id="documentsGrid">
+                            <!-- 文档素材将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                    
+                    <div class="material-category">
+                        <h3>🖼️ 图片素材</h3>
+                        <div class="materials-grid" id="imagesGrid">
+                            <!-- 图片素材将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="status-bar">
+                <div class="material-info">📚 素材库</div>
+                <div class="material-count">📦 素材: <span id="materialCount">0</span> 个</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 版本比较模态框 -->
+    <div class="modal-overlay" id="compareModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>版本比较</h2>
+                <button class="toolbar-btn" id="closeModal">关闭</button>
+            </div>
+            <div class="modal-body">
+                <div class="version-comparison">
+                    <h3>当前版本</h3>
+                    <div class="version-content" id="currentVersionContent"></div>
+                </div>
+                <div class="version-comparison">
+                    <h3>历史版本</h3>
+                    <div class="version-content" id="historyVersionContent"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelRestore">取消</button>
+                <button class="btn btn-primary" id="confirmRestore">恢复此版本</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 手动复制模态框 -->
+    <div class="modal-overlay" id="manualCopyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 请复制以下内容</h2>
+                <button class="toolbar-btn" id="closeCopyModal">关闭</button>
+            </div>
+            <div class="modal-body">
+                <textarea class="version-content" id="manualCopyText" readonly></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="selectCopyText()">全选文本</button>
+                <button class="btn btn-primary" onclick="copySelectedText()">复制选中内容</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加素材模态框 -->
+    <div class="modal-overlay" id="addMaterialModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>添加素材</h2>
+                <button class="toolbar-btn" id="closeMaterialModal">关闭</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>素材类型:</label>
+                    <select id="materialType">
+                        <option value="characters">角色设定</option>
+                        <option value="locations">地点场景</option>
+                        <option value="items">物品道具</option>
+                        <option value="plots">情节大纲</option>
+                        <option value="documents">文档资料</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>素材名称:</label>
+                    <input type="text" id="materialName" placeholder="请输入素材名称">
+                </div>
+                <div class="form-group">
+                    <label>素材内容:</label>
+                    <textarea id="materialContent" placeholder="请输入素材描述内容..." rows="6"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>上传图片:</label>
+                    <input type="file" id="materialImage" accept="image/*">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelMaterial">取消</button>
+                <button class="btn btn-primary" id="saveMaterial">保存素材</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 文件上传输入 -->
+    <input type="file" id="materialFileInput" multiple accept=".txt,.md,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp" style="display: none;">
+
+
+<script>
+// 应用状态
+const state = {
+    chapters: JSON.parse(localStorage.getItem('novelChapters')) || [
+        { id: 1, title: '第一章 开端', content: '' }
+    ],
+    currentChapterId: 1,
+    isDarkTheme: localStorage.getItem('darkTheme') === 'true',
+    versions: JSON.parse(localStorage.getItem('novelVersions')) || {},
+    selectedVersion: null,
+    isSidebarOpen: false
+};
+
+// 素材库数据
+const materialLibrary = {
+    characters: JSON.parse(localStorage.getItem('novelMaterials_characters')) || [],
+    locations: JSON.parse(localStorage.getItem('novelMaterials_locations')) || [],
+    items: JSON.parse(localStorage.getItem('novelMaterials_items')) || [],
+    plots: JSON.parse(localStorage.getItem('novelMaterials_plots')) || [],
+    documents: JSON.parse(localStorage.getItem('novelMaterials_documents')) || [],
+    images: JSON.parse(localStorage.getItem('novelMaterials_images')) || []
+};
+
+// DOM元素
+const elements = {
+    menuToggle: document.getElementById('menuToggle'),
+    overlay: document.getElementById('overlay'),
+    sidebar: document.getElementById('sidebar'),
+    closeSidebar: document.getElementById('closeSidebar'),
+    chaptersList: document.getElementById('chaptersList'),
+    historyList: document.getElementById('historyList'),
+    materialsList: document.getElementById('materialsList'),
+    chapterTitle: document.getElementById('chapterTitle'),
+    editor: document.getElementById('editor'),
+    wordCount: document.getElementById('wordCount'),
+    newChapterBtn: document.getElementById('newChapterBtn'),
+    themeToggle: document.getElementById('themeToggle'),
+    exportBtn: document.getElementById('exportBtn'),
+    saveBtn: document.getElementById('saveBtn'),
+    saveVersionBtn: document.getElementById('saveVersionBtn'),
+    copyAllBtn: document.getElementById('copyAllBtn'),
+    toggleSecondEditor: document.getElementById('toggleSecondEditor'),
+    toggleMainEditor: document.getElementById('toggleMainEditor'),
+    compareModal: document.getElementById('compareModal'),
+    currentVersionContent: document.getElementById('currentVersionContent'),
+    historyVersionContent: document.getElementById('historyVersionContent'),
+    closeModal: document.getElementById('closeModal'),
+    cancelRestore: document.getElementById('cancelRestore'),
+    confirmRestore: document.getElementById('confirmRestore'),
+    secondEditor: document.getElementById('secondEditor'),
+    materialSearch: document.getElementById('materialSearch'),
+    addMaterialBtn: document.getElementById('addMaterialBtn'),
+    materialFileInput: document.getElementById('materialFileInput'),
+    uploadMaterialBtn: document.getElementById('uploadMaterialBtn'),
+    createMaterialBtn: document.getElementById('createMaterialBtn'),
+    materialCount: document.getElementById('materialCount'),
+    manualCopyModal: document.getElementById('manualCopyModal'),
+    manualCopyText: document.getElementById('manualCopyText'),
+    addMaterialModal: document.getElementById('addMaterialModal'),
+    closeCopyModal: document.getElementById('closeCopyModal'),
+    closeMaterialModal: document.getElementById('closeMaterialModal'),
+    cancelMaterial: document.getElementById('cancelMaterial'),
+    saveMaterial: document.getElementById('saveMaterial')
+};
+
+// 基础工具函数
+function calculateWordCount(text) {
+    const chineseChars = text.match(/[\u4e00-\u9fa5]/g) || [];
+    const otherWords = text.replace(/[\u4e00-\u9fa5]/g, '').trim().split(/\s+/).filter(word => word.length > 0);
+    return chineseChars.length + otherWords.length;
+}
+
+function formatDate(timestamp) {
+    const date = new Date(timestamp);
+    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// 章节管理函数
+function updateWordCount() {
+    const text = elements.editor.value;
+    elements.wordCount.textContent = calculateWordCount(text);
+}
+
+function loadChapter(chapterId) {
+    const chapter = state.chapters.find(c => c.id === chapterId);
+    if (chapter) {
+        state.currentChapterId = chapterId;
+        elements.chapterTitle.value = chapter.title || '';
+        elements.editor.value = chapter.content || '';
+        updateWordCount();
+        renderChaptersList();
+    }
+}
+
+function saveCurrentChapter() {
+    const chapterIndex = state.chapters.findIndex(c => c.id === state.currentChapterId);
+    if (chapterIndex !== -1) {
+        state.chapters[chapterIndex].title = elements.chapterTitle.value;
+        state.chapters[chapterIndex].content = elements.editor.value;
+        localStorage.setItem('novelChapters', JSON.stringify(state.chapters));
+    }
+}
+
+function createNewChapter() {
+    const newId = state.chapters.length > 0 ? 
+        Math.max(...state.chapters.map(c => c.id)) + 1 : 1;
+    
+    const newChapter = {
+        id: newId,
+        title: `第${state.chapters.length + 1}章 新章节`,
+        content: ''
+    };
+    
+    state.chapters.push(newChapter);
+    saveCurrentChapter();
+    loadChapter(newId);
+    
+    if (window.innerWidth <= 768) {
+        closeSidebar();
+    }
+}
+
+function deleteChapter(chapterId) {
+    if (state.chapters.length <= 1) {
+        alert('至少需要保留一个章节');
+        return;
+    }
+    
+    if (confirm('确定要删除这个章节吗？此操作不可撤销。')) {
+        state.chapters = state.chapters.filter(c => c.id !== chapterId);
+        
+        if (state.currentChapterId === chapterId) {
+            loadChapter(state.chapters[0].id);
+        }
+        
+        localStorage.setItem('novelChapters', JSON.stringify(state.chapters));
+        renderChaptersList();
+    }
+}
+
+function renderChaptersList() {
+    elements.chaptersList.innerHTML = '';
+    
+    if (state.chapters.length === 0) {
+        elements.chaptersList.innerHTML = '<div class="empty-state">暂无章节，点击"新建章节"开始创作</div>';
+        return;
+    }
+    
+    state.chapters.forEach(chapter => {
+        const chapterElement = document.createElement('div');
+        chapterElement.className = `chapter-item ${chapter.id === state.currentChapterId ? 'active' : ''}`;
+        chapterElement.innerHTML = `
+            <div>
+                <div class="chapter-title">${chapter.title || '未命名章节'}</div>
+            </div>
+            <div class="chapter-actions">
+                <button class="chapter-action" data-id="${chapter.id}">删除</button>
+            </div>
+        `;
+        
+        chapterElement.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('chapter-action')) {
+                if (chapter.id !== state.currentChapterId) {
+                    saveCurrentChapter();
+                    loadChapter(chapter.id);
+                }
+                if (window.innerWidth <= 768) {
+                    closeSidebar();
+                }
+            }
+        });
+        
+        const deleteBtn = chapterElement.querySelector('.chapter-action');
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteChapter(chapter.id);
+        });
+        
+        elements.chaptersList.appendChild(chapterElement);
+    });
+}
+
+// 版本管理函数
+function saveVersion() {
+    const chapter = state.chapters.find(c => c.id === state.currentChapterId);
+    if (!chapter) return;
+    
+    if (!state.versions[state.currentChapterId]) {
+        state.versions[state.currentChapterId] = [];
+    }
+    
+    const versions = state.versions[state.currentChapterId];
+    const newVersionId = versions.length > 0 ? Math.max(...versions.map(v => v.id)) + 1 : 1;
+    
+    const newVersion = {
+        id: newVersionId,
+        timestamp: new Date().toISOString(),
+        title: chapter.title,
+        content: JSON.parse(JSON.stringify(chapter.content)),
+        wordCount: calculateWordCount(chapter.content),
+        type: 'manual'
+    };
+    
+    versions.push(newVersion);
+    
+    if (versions.length > 50) {
+        versions.shift();
+    }
+    
+    localStorage.setItem('novelVersions', JSON.stringify(state.versions));
+    
+    if (document.querySelector('.tab-btn[data-tab="history"]').classList.contains('active')) {
+        renderHistoryList();
+    }
+
+    const originalText = elements.saveVersionBtn.textContent;
+    elements.saveVersionBtn.textContent = '✅ 已保存';
+    setTimeout(() => {
+        elements.saveVersionBtn.textContent = originalText;
+    }, 1000);
+}
+
+let lastAutoSaveTime = 0;
+function autoSaveVersion() {
+    const chapter = state.chapters.find(c => c.id === state.currentChapterId);
+    if (!chapter || !chapter.content || chapter.content.trim().length < 10) return;
+    
+    const now = Date.now();
+    if (now - lastAutoSaveTime > 300000) {
+        if (!state.versions[state.currentChapterId]) {
+            state.versions[state.currentChapterId] = [];
+        }
+        
+        const versions = state.versions[state.currentChapterId];
+        const newVersionId = versions.length > 0 ? Math.max(...versions.map(v => v.id)) + 1 : 1;
+        
+        const newVersion = {
+            id: newVersionId,
+            timestamp: new Date().toISOString(),
+            title: chapter.title,
+            content: JSON.parse(JSON.stringify(chapter.content)),
+            wordCount: calculateWordCount(chapter.content),
+            type: 'auto'
+        };
+        
+        versions.push(newVersion);
+        
+        if (versions.length > 50) {
+            versions.shift();
+        }
+        
+        localStorage.setItem('novelVersions', JSON.stringify(state.versions));
+        lastAutoSaveTime = now;
+    }
+}
+
+function renderHistoryList() {
+    elements.historyList.innerHTML = '';
+    
+    const chapterVersions = state.versions[state.currentChapterId] || [];
+    
+    if (chapterVersions.length === 0) {
+        elements.historyList.innerHTML = '<div class="empty-state">暂无历史版本</div>';
+        return;
+    }
+    
+    chapterVersions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    chapterVersions.forEach((version, index) => {
+        const versionElement = document.createElement('div');
+        versionElement.className = 'history-item';
+        versionElement.innerHTML = `
+            <div>
+                <div class="history-title">版本 ${chapterVersions.length - index} 
+                    <span style="font-size:0.7rem; color:${version.type === 'manual' ? '#3498db' : '#95a5a6'}; margin-left:8px;">
+                        ${version.type === 'manual' ? '手动' : '自动'}
+                    </span>
+                </div>
+                <div class="history-info">
+                    ${formatDate(version.timestamp)} · ${version.wordCount} 字
+                </div>
+            </div>
+            <div class="history-actions">
+                <button class="history-action compare-btn" data-id="${version.id}">比较</button>
+                <button class="history-action restore-btn" data-id="${version.id}">恢复</button>
+            </div>
+        `;
+        
+        const compareBtn = versionElement.querySelector('.compare-btn');
+        compareBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            compareVersion(version.id);
+        });
+        
+        const restoreBtn = versionElement.querySelector('.restore-btn');
+        restoreBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            restoreVersion(version.id);
+        });
+        
+        elements.historyList.appendChild(versionElement);
+    });
+}
+
+function compareVersion(versionId) {
+    const versions = state.versions[state.currentChapterId] || [];
+    const version = versions.find(v => v.id === versionId);
+    const currentChapter = state.chapters.find(c => c.id === state.currentChapterId);
+    
+    if (!version || !currentChapter) return;
+    
+    state.selectedVersion = versionId;
+    
+    const currentContent = currentChapter.content;
+    const historyContent = version.content;
+    
+    elements.currentVersionContent.textContent = currentContent;
+    elements.historyVersionContent.textContent = historyContent;
+    
+    elements.compareModal.classList.add('active');
+}
+
+function restoreVersion(versionId) {
+    const versions = state.versions[state.currentChapterId] || [];
+    const version = versions.find(v => v.id === versionId);
+    
+    if (!version) return;
+    
+    if (confirm(`确定要恢复到这个版本吗？当前内容将被替换。`)) {
+        const chapterIndex = state.chapters.findIndex(c => c.id === state.currentChapterId);
+        if (chapterIndex !== -1) {
+            state.chapters[chapterIndex].content = JSON.parse(JSON.stringify(version.content));
+            localStorage.setItem('novelChapters', JSON.stringify(state.chapters));
+            loadChapter(state.currentChapterId);
+            closeModal();
+        }
+    }
+}
+
+// 主题和导出函数
+function toggleTheme() {
+    state.isDarkTheme = !state.isDarkTheme;
+    document.body.classList.toggle('dark-theme');
+    elements.themeToggle.textContent = state.isDarkTheme ? '☀️ 浅色模式' : '🌙 暗色模式';
+    localStorage.setItem('darkTheme', state.isDarkTheme);
+}
+
+function exportNovel() {
+    if (state.chapters.length === 0) {
+        alert('没有内容可导出');
+        return;
+    }
+    
+    let content = '';
+    
+    state.chapters.forEach(chapter => {
+        content += `# ${chapter.title}\n\n`;
+        content += `${chapter.content}\n\n`;
+        content += '---\n\n';
+    });
+    
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '我的小说.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// 侧边栏函数
+function toggleSidebar() {
+    state.isSidebarOpen = !state.isSidebarOpen;
+    elements.sidebar.classList.toggle('active', state.isSidebarOpen);
+    elements.overlay.classList.toggle('active', state.isSidebarOpen);
+}
+
+function closeSidebar() {
+    state.isSidebarOpen = false;
+    elements.sidebar.classList.remove('active');
+    elements.overlay.classList.remove('active');
+}
+
+function closeModal() {
+    elements.compareModal.classList.remove('active');
+    state.selectedVersion = null;
+}
+
+function confirmRestore() {
+    if (state.selectedVersion) {
+        restoreVersion(state.selectedVersion);
+    }
+}
+
+// 标签页切换
+function setupTabSwitching() {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabName = btn.dataset.tab;
+            
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            document.querySelectorAll('.tab-content > div').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + 'List').classList.add('active');
+            
+            if (tabName === 'history') {
+                renderHistoryList();
+            }
+        });
+    });
+}
+
+// 事件监听器设置
+function setupEventListeners() {
+    elements.newChapterBtn.addEventListener('click', createNewChapter);
+    elements.themeToggle.addEventListener('click', toggleTheme);
+    elements.exportBtn.addEventListener('click', exportNovel);
+    elements.saveBtn.addEventListener('click', saveCurrentChapter);
+    elements.saveVersionBtn.addEventListener('click', saveVersion);
+    elements.copyAllBtn.addEventListener('click', () => FullTextCopy.copyFullText());
+    elements.editor.addEventListener('input', updateWordCount);
+    elements.closeModal.addEventListener('click', closeModal);
+    elements.cancelRestore.addEventListener('click', closeModal);
+    elements.confirmRestore.addEventListener('click', confirmRestore);
+    
+    elements.menuToggle.addEventListener('click', toggleSidebar);
+    elements.overlay.addEventListener('click', closeSidebar);
+    elements.closeSidebar.addEventListener('click', closeSidebar);
+    
+    elements.toggleSecondEditor.addEventListener('click', () => SecondEditor.show());
+    elements.toggleMainEditor.addEventListener('click', () => SecondEditor.hide());
+    
+    // 素材库事件 - 确保这些事件正确绑定
+    elements.addMaterialBtn.addEventListener('click', () => SecondEditor.showAddMaterialModal());
+    elements.createMaterialBtn.addEventListener('click', () => SecondEditor.showAddMaterialModal());
+    elements.uploadMaterialBtn.addEventListener('click', () => {
+        console.log('上传按钮点击'); // 调试用
+        elements.materialFileInput.click();
+    });
+    
+    elements.materialFileInput.addEventListener('change', (e) => {
+        console.log('文件选择变化', e.target.files); // 调试用
+        SecondEditor.handleFileUpload(e.target.files);
+    });
+    
+    elements.materialSearch.addEventListener('input', (e) => SecondEditor.searchMaterials(e.target.value));
+    
+    // 添加素材模态框事件
+    elements.saveMaterial.addEventListener('click', () => {
+        console.log('保存素材按钮点击'); // 调试用
+        SecondEditor.saveMaterialFromForm();
+    });
+    
+    // 确保图片上传输入正确绑定
+    const materialImageInput = document.getElementById('materialImage');
+    if (materialImageInput) {
+        materialImageInput.addEventListener('change', (e) => {
+            console.log('图片文件选择', e.target.files); // 调试用
+            SecondEditor.handleImageUpload(e);
+        });
+    }
+    
+    // 模态框关闭事件
+    elements.closeCopyModal.addEventListener('click', () => {
+        elements.manualCopyModal.classList.remove('active');
+    });
+    
+    elements.closeMaterialModal.addEventListener('click', () => {
+        SecondEditor.closeAddMaterialModal();
+    });
+    
+    elements.cancelMaterial.addEventListener('click', () => {
+        SecondEditor.closeAddMaterialModal();
+    });
+}
+
+// 第二编辑器// 第二编辑器
+const SecondEditor = {
+    isActive: false,
+    currentImageFile: null,
+    
+    init() {
+        this.renderMaterialCategories();
+        this.updateMaterialStats();
+    },
+    
+    show() {
+        elements.secondEditor.classList.add('active');
+        this.isActive = true;
+        this.updateMaterialStats();
+    },
+    
+    hide() {
+        elements.secondEditor.classList.remove('active');
+        this.isActive = false;
+    },
+    
+    // 处理图片上传
+    handleImageUpload(e) {
+        const file = e.target.files[0];
+        if (file) {
+            this.currentImageFile = file;
+        }
+    },
+    
+    // 从表单保存素材
+    saveMaterialFromForm() {
+        const type = document.getElementById('materialType').value;
+        const name = document.getElementById('materialName').value;
+        const content = document.getElementById('materialContent').value;
+        
+        if (!name.trim()) {
+            alert('请输入素材名称');
+            return;
+        }
+        
+        // 处理图片上传
+        if (this.currentImageFile) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.addMaterial(type, name, content, e.target.result);
+                this.closeAddMaterialModal();
+            };
+            reader.readAsDataURL(this.currentImageFile);
+        } else {
+            this.addMaterial(type, name, content);
+            this.closeAddMaterialModal();
+        }
+    },
+    
+    // 关闭添加素材模态框
+    closeAddMaterialModal() {
+        elements.addMaterialModal.classList.remove('active');
+        document.getElementById('materialName').value = '';
+        document.getElementById('materialContent').value = '';
+        document.getElementById('materialImage').value = '';
+        this.currentImageFile = null;
+    },
+    
+    // 处理文件上传
+    async handleFileUpload(files) {
+        for (let file of files) {
+            await this.processFile(file);
+        }
+        elements.materialFileInput.value = '';
+        this.updateMaterialStats();
+    },
+    
+    // 处理单个文件
+    // 处理文件上传
+async handleFileUpload(files) {
+    console.log('开始处理文件上传', files); // 调试用
+    
+    if (!files || files.length === 0) {
+        console.log('没有选择文件');
+        return;
+    }
+    
+    for (let file of files) {
+        console.log('处理文件:', file.name, file.type); // 调试用
+        await this.processFile(file);
+    }
+    
+    elements.materialFileInput.value = '';
+    this.updateMaterialStats();
+    this.renderMaterialCategories(); // 重新渲染素材列表
+    
+    console.log('文件上传完成'); // 调试用
+},
+
+// 处理单个文件
+async processFile(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        
+        console.log('处理文件类型:', file.type, '文件名:', file.name); // 调试用
+        
+        if (file.type.startsWith('image/')) {
+            // 处理图片文件
+            reader.onload = (e) => {
+                console.log('图片文件读取完成'); // 调试用
+                this.addMaterial(
+                    'images',
+                    file.name,
+                    `图片素材: ${file.name}`,
+                    e.target.result
+                );
+                resolve();
+            };
+            reader.onerror = () => {
+                console.error('图片文件读取失败');
+                resolve();
+            };
+            reader.readAsDataURL(file);
+        } else if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+            // 处理文本文件
+            reader.onload = (e) => {
+                console.log('文本文件读取完成'); // 调试用
+                this.addMaterial(
+                    'documents',
+                    file.name.replace('.txt', ''),
+                    e.target.result,
+                    null
+                );
+                resolve();
+            };
+            reader.onerror = () => {
+                console.error('文本文件读取失败');
+                resolve();
+            };
+            reader.readAsText(file);
+        } else {
+            // 处理其他文档
+            console.log('处理其他类型文件'); // 调试用
+            this.addMaterial(
+                'documents',
+                file.name,
+                `文档文件: ${file.name} (${file.type})`,
+                null
+            );
+            resolve();
+        }
+    });
+},
+    
+    // 更新素材统计
+    updateMaterialStats() {
+        let total = 0;
+        let imageCount = 0;
+        let docCount = 0;
+        
+        for (const category in materialLibrary) {
+            total += materialLibrary[category].length;
+            if (category === 'images') imageCount = materialLibrary[category].length;
+            if (category === 'documents') docCount = materialLibrary[category].length;
+        }
+        
+        elements.materialCount.textContent = total;
+        // 更新素材统计显示
+        const totalMaterialsEl = document.getElementById('totalMaterials');
+        const imageCountEl = document.getElementById('imageCount');
+        const docCountEl = document.getElementById('docCount');
+        
+        if (totalMaterialsEl) totalMaterialsEl.textContent = total;
+        if (imageCountEl) imageCountEl.textContent = imageCount;
+        if (docCountEl) docCountEl.textContent = docCount;
+    },
+    
+    // 显示添加素材模态框
+    showAddMaterialModal() {
+        elements.addMaterialModal.classList.add('active');
+    },
+    
+    // 渲染素材分类
+    renderMaterialCategories() {
+        const categories = ['characters', 'locations', 'items', 'plots', 'documents', 'images'];
+        
+        categories.forEach(category => {
+            const grid = document.getElementById(`${category}Grid`);
+            if (grid) {
+                grid.innerHTML = this.renderMaterialsByCategory(category);
+                
+                grid.querySelectorAll('.material-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        if (!e.target.classList.contains('material-action')) {
+                            this.useMaterial(item.dataset.id);
+                        }
+                    });
+                });
+            }
+        });
+    },
+    
+    // 渲染指定分类的素材
+    renderMaterialsByCategory(categoryId) {
+        const materials = materialLibrary[categoryId] || [];
+        
+        if (materials.length === 0) {
+            return '<div class="empty-state">暂无素材</div>';
+        }
+        
+        return materials.map(material => `
+            <div class="material-item" data-id="${material.id}">
+                <div class="material-actions">
+                    <button class="material-action" onclick="SecondEditor.useMaterial('${material.id}')">📝</button>
+                    <button class="material-action" onclick="SecondEditor.deleteMaterial('${material.id}', '${categoryId}')">🗑️</button>
+                </div>
+                <div class="material-header">
+                    <div class="material-name">${material.name}</div>
+                    <div class="material-type">${this.getTypeLabel(material.type || categoryId)}</div>
+                </div>
+                <div class="material-content">
+                    ${this.truncateContent(material.content || '')}
+                </div>
+                ${material.data && material.data.startsWith('data:image') ? 
+                    `<img src="${material.data}" class="material-image" alt="${material.name}">` : ''}
+            </div>
+        `).join('');
+    },
+    
+    // 使用素材（插入到主编辑器）
+    useMaterial(materialId) {
+        const material = this.findMaterialById(materialId);
+        if (!material) return;
+        
+        const mainEditor = elements.editor;
+        const cursorPos = mainEditor.selectionStart;
+        const textBefore = mainEditor.value.substring(0, cursorPos);
+        const textAfter = mainEditor.value.substring(cursorPos);
+        
+        let insertText = '';
+        
+        if (material.data && material.data.startsWith('data:image')) {
+            insertText = `[图片: ${material.name}]`;
+        } else {
+            insertText = `【${material.name}】${material.content}\n`;
+        }
+        
+        mainEditor.value = textBefore + insertText + textAfter;
+        mainEditor.focus();
+        mainEditor.selectionStart = cursorPos + insertText.length;
+        mainEditor.selectionEnd = cursorPos + insertText.length;
+        
+        this.hide();
+        this.showNotification(`素材"${material.name}"已插入`);
+    },
+    
+    // 查找素材
+    findMaterialById(materialId) {
+        for (const category in materialLibrary) {
+            const material = materialLibrary[category].find(m => m.id == materialId);
+            if (material) return material;
+        }
+        return null;
+    },
+    
+    // 删除素材
+    deleteMaterial(materialId, categoryId) {
+        if (!confirm('确定要删除这个素材吗？')) return;
+        
+        materialLibrary[categoryId] = materialLibrary[categoryId].filter(m => m.id != materialId);
+        this.saveMaterialLibrary();
+        this.renderMaterialCategories();
+        this.updateMaterialStats();
+        
+        this.showNotification('素材已删除');
+    },
+    
+    // 添加素材
+    addMaterial(category, name, content, data = null) {
+        const material = {
+            id: Date.now(),
+            name: name,
+            type: category,
+            content: content || '',
+            data: data,
+            created: new Date().toISOString()
+        };
+        
+        if (!materialLibrary[category]) {
+            materialLibrary[category] = [];
+        }
+        
+        materialLibrary[category].push(material);
+        this.saveMaterialLibrary();
+        this.renderMaterialCategories();
+        this.updateMaterialStats();
+        
+        this.showNotification(`"${name}" 已添加到素材库`);
+    },
+    
+    // 搜索素材
+    searchMaterials(keyword) {
+        if (!keyword.trim()) {
+            this.renderMaterialCategories();
+            return;
+        }
+        
+        const categories = ['characters', 'locations', 'items', 'plots', 'documents', 'images'];
+        
+        categories.forEach(category => {
+            const grid = document.getElementById(`${category}Grid`);
+            const materials = materialLibrary[category] || [];
+            
+            const filtered = materials.filter(material => 
+                material.name.includes(keyword) || 
+                (material.content && material.content.includes(keyword))
+            );
+            
+            if (grid) {
+                if (filtered.length === 0) {
+                    grid.innerHTML = '<div class="empty-state">无匹配素材</div>';
+                } else {
+                    grid.innerHTML = filtered.map(material => `
+                        <div class="material-item" data-id="${material.id}">
+                            <div class="material-actions">
+                                <button class="material-action" onclick="SecondEditor.useMaterial('${material.id}')">📝</button>
+                                <button class="material-action" onclick="SecondEditor.deleteMaterial('${material.id}', '${category}')">🗑️</button>
+                            </div>
+                            <div class="material-header">
+                                <div class="material-name">${material.name}</div>
+                                <div class="material-type">${this.getTypeLabel(material.type || category)}</div>
+                            </div>
+                            <div class="material-content">
+                                ${this.truncateContent(material.content || '')}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        });
+    },
+    
+    // 保存素材库
+    saveMaterialLibrary() {
+        for (const category in materialLibrary) {
+            localStorage.setItem(`novelMaterials_${category}`, JSON.stringify(materialLibrary[category]));
+        }
+    },
+    
+    // 其他辅助方法
+    getTypeLabel(type) {
+        const labels = {
+            'characters': '角色',
+            'locations': '地点', 
+            'items': '物品',
+            'plots': '情节',
+            'documents': '文档',
+            'images': '图片'
+        };
+        return labels[type] || type;
+    },
+    
+    truncateContent(content, length = 50) {
+        if (!content) return '暂无描述';
+        return content.length > length ? content.substring(0, length) + '...' : content;
+    },
+    
+    showNotification(message) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed; top: 20px; right: 20px; 
+            background: #27ae60; color: white; padding: 10px 20px;
+            border-radius: 5px; z-index: 10000;
+        `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 2000);
+    }
+};
+
+// 全文复制功能
+const FullTextCopy = {
+    init() {
+        this.setupKeyboardShortcut();
+    },
+    
+    setupKeyboardShortcut() {
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                e.preventDefault();
+                this.copyFullText();
+            }
+        });
+    },
+    
+    generateFullText() {
+        if (!state.chapters || state.chapters.length === 0) {
+            return '暂无内容';
+        }
+        
+        let fullText = '';
+        
+        const novelTitle = localStorage.getItem('novelTitle') || '我的小说';
+        fullText += `《${novelTitle}》\n\n`;
+        
+        state.chapters.forEach((chapter, index) => {
+            fullText += `第${index + 1}章 ${chapter.title}\n\n`;
+            fullText += `${chapter.content}\n\n`;
+            
+            if (index < state.chapters.length - 1) {
+                fullText += '───────────────\n\n';
+            }
+        });
+        
+        const totalWords = state.chapters.reduce((sum, chapter) => {
+            return sum + calculateWordCount(chapter.content);
+        }, 0);
+        
+        const totalChapters = state.chapters.length;
+        const exportTime = new Date().toLocaleString('zh-CN');
+        
+        fullText += `\n───────────────\n`;
+        fullText += `统计信息：\n`;
+        fullText += `总章节数：${totalChapters}章\n`;
+        fullText += `总字数：${totalWords}字\n`;
+        fullText += `导出时间：${exportTime}\n`;
+        
+        return fullText;
+    },
+    
+    async copyFullText() {
+        try {
+            const fullText = this.generateFullText();
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(fullText);
+                this.showCopySuccess();
+            } else {
+                this.fallbackCopy(fullText);
+            }
+            
+        } catch (error) {
+            console.error('复制失败:', error);
+            this.showCopyError(fullText);
+        }
+    },
+    
+    fallbackCopy(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            if (successful) {
+                this.showCopySuccess();
+            } else {
+                this.showCopyError(text);
+            }
+        } catch (err) {
+            document.body.removeChild(textArea);
+            this.showCopyError(text);
+        }
+    },
+    
+    showCopySuccess() {
+        const originalText = elements.copyAllBtn.innerHTML;
+        elements.copyAllBtn.innerHTML = '✅ 已复制';
+        elements.copyAllBtn.style.background = '#27ae60';
+        
+        setTimeout(() => {
+            elements.copyAllBtn.innerHTML = originalText;
+            elements.copyAllBtn.style.background = '';
+        }, 2000);
+    },
+    
+    showCopyError(text) {
+        this.showTextForManualCopy(text);
+    },
+    
+    showTextForManualCopy(text) {
+        elements.manualCopyText.value = text;
+        elements.manualCopyModal.classList.add('active');
+        
+        setTimeout(() => {
+            elements.manualCopyText.select();
+        }, 100);
+    }
+};
+
+// 手动复制相关函数
+function selectCopyText() {
+    elements.manualCopyText.select();
+}
+
+function copySelectedText() {
+    elements.manualCopyText.select();
+    
+    try {
+        document.execCommand('copy');
+        alert('内容已复制到剪贴板！');
+        closeManualCopyModal();
+    } catch (err) {
+        alert('复制失败，请手动选择并复制文本');
+    }
+}
+
+function closeManualCopyModal() {
+    elements.manualCopyModal.classList.remove('active');
+}
+
+// 初始化应用
+function initApp() {
+    renderChaptersList();
+    loadChapter(state.currentChapterId);
+    updateWordCount();
+    setupTabSwitching();
+    setupEventListeners();
+    
+    if (state.isDarkTheme) {
+        document.body.classList.add('dark-theme');
+        elements.themeToggle.textContent = '☀️ 浅色模式';
+    }
+    
+    setInterval(saveCurrentChapter, 3000);
+    setInterval(autoSaveVersion, 60000);
+
+    SecondEditor.init();
+    FullTextCopy.init();
+    
+    console.log('应用初始化完成');
+}
+
+// 启动应用
+document.addEventListener('DOMContentLoaded', function() {
+    initApp();
+    SecondEditor.updateMaterialStats();
+});
+// 在文件末尾添加这个启动代码
+
+// 其他原有函数保持不变（setupTabSwitching, setupEventListeners, renderChaptersList, loadChapter, saveCurrentChapter等）
+// ... [这里包含之前的所有核心功能函数]
+    </script>
+</body>
+    </body>
+</html>
